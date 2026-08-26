@@ -77,6 +77,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1.0" },
+      { name: "robots", content: "noindex, nofollow, noarchive" },
       { title: "Happy Birthday! | A Special Gift For You" },
       { name: "description", content: "A premium interactive birthday gift experience with memories, interactive surprises, and a special custom comic book." },
       { property: "og:title", content: "Happy Birthday! | A Special Gift For You" },
