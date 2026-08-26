@@ -33,7 +33,7 @@ export function ParticleField({ count = 60, variant = "dust", className }: Props
     resize();
 
     const n = Math.round(count * (w < 700 ? 0.5 : 1));
-    const colors = ["#f7b9c8", "#f8d8a8", "#d9c4f5", "#bcd9f5", "#ffffff"];
+    const colors = ["#F43F5E", "#F59E0B", "#FB7185", "#FBBF24", "#FFFFFF", "#FCE7F3"];
     const parts = Array.from({ length: n }, () => ({
       x: Math.random() * w,
       y: Math.random() * h,
@@ -78,7 +78,7 @@ export function ParticleField({ count = 60, variant = "dust", className }: Props
         if (p.x > w + 20) p.x = -10;
 
         ctx.globalAlpha = p.a * (variant === "sparkle" ? 0.6 + 0.4 * Math.sin(p.p * 3) : 1);
-        ctx.fillStyle = p.c;
+        ctx.fillStyle = p.c ?? "#ffffff";
         if (variant === "hearts") {
           ctx.save();
           ctx.translate(p.x, p.y);

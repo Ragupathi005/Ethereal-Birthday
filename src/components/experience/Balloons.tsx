@@ -1,81 +1,206 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import confetti from "canvas-confetti";
-import { balloonMessages } from "@/data/birthday";
+import { Star, Sparkles, X } from "lucide-react";
+import { balloonWishes } from "@/data/birthday";
+import { playSfx } from "./MusicController";
 
-const BALLOONS = [
-  { id: 0, x: "6%", y: "18%", hue: "var(--pink)", delay: 0, size: 108 },
-  { id: 1, x: "18%", y: "58%", hue: "var(--lavender)", delay: 1.2, size: 86 },
-  { id: 2, x: "82%", y: "22%", hue: "var(--peach)", delay: 0.6, size: 120 },
-  { id: 3, x: "90%", y: "62%", hue: "var(--sky)", delay: 1.8, size: 78 },
-  { id: 4, x: "34%", y: "8%", hue: "var(--gold)", delay: 2.2, size: 70 },
-  { id: 5, x: "68%", y: "76%", hue: "var(--pink)", delay: 1.5, size: 92 },
+type BalloonInstance = {
+  id: number;
+  startX: number;
+  speed: number;
+  delay: number;
+  size: number;
+  color1: string;
+  color2: string;
+  color3: string;
+  swayDist: number;
+};
+
+// Sophisticated Natural Pastel / Terracotta Tones
+const BALLOON_PRESETS = [
+  { color1: "#FCEFEA", color2: "#C86D58", color3: "#8C4332" }, // Muted Coral
+  { color1: "#EBF3F6", color2: "#527A8A", color3: "#325360" }, // Dusty Blue
+  { color1: "#FAF3E6", color2: "#D99E43", color3: "#9E6E24" }, // Warm Gold
+  { color1: "#EEF4EE", color2: "#7E987F", color3: "#4F6650" }, // Soft Sage
+  { color1: "#F8EDEF", color2: "#C27E89", color3: "#8A4C56" }, // Faded Rose
 ];
 
-export function Balloons() {
-  const [popped, setPopped] = useState<number[]>([]);
-  const [note, setNote] = useState<{ id: number; text: string } | null>(null);
+// Balloon starting positions across the width of the screen (10 balloons)
+const INITIAL_BALLOONS: BalloonInstance[] = Array.from({ length: 10 }, (_, i) => {
+  const preset = BALLOON_PRESETS[i % BALLOON_PRESETS.length]!;
+  return {
+    id: i,
+    startX: 6 + i * 9.5 + (Math.random() * 2 - 1),
+    speed: 13 + Math.random() * 7,
+    delay: (i * 1.5) % 9,
+    size: 58 + Math.random() * 14,
+    color1: preset.color1,
+    color2: preset.color2,
+    color3: preset.color3,
+    swayDist: 8 + Math.random() * 6,
+  };
+});
 
-  const pop = (id: number, e: React.MouseEvent) => {
-    if (popped.includes(id)) return;
-    setPopped((p) => [...p, id]);
-    setNote({ id, text: balloonMessages[id % balloonMessages.length] });
+export function Balloons() {
+  const [balloons] = useState<BalloonInstance[]>(INITIAL_BALLOONS);
+  const [poppedIds, setPoppedIds] = useState<Set<number>>(new Set());
+  const [activeNote, setActiveNote] = useState<{ id: number; text: string; top: number } | null>(null);
+
+  const blastBalloon = (id: number, clientX: number, clientY: number) => {
+    playSfx("pop");
+    setPoppedIds((prev) => new Set(prev).add(id));
+
     confetti({
-      particleCount: 60,
-      spread: 70,
-      scalar: 0.8,
-      origin: { x: e.clientX / window.innerWidth, y: e.clientY / window.innerHeight },
-      colors: ["#f7b9c8", "#f8d8a8", "#d9c4f5", "#bcd9f5"],
+      particleCount: 32,
+      spread: 60,
+      startVelocity: 26,
+      origin: { x: clientX / window.innerWidth, y: clientY / window.innerHeight },
+      colors: ["#C86D58", "#527A8A", "#D99E43", "#7E987F", "#C27E89"],
     });
-    window.setTimeout(() => setNote((n) => (n?.id === id ? null : n)), 3400);
+
+    const msg = balloonWishes[id % balloonWishes.length] ?? "You make every single day brighter!";
+
+    // Clamp vertical position safely within viewport
+    const vh = typeof window !== "undefined" ? window.innerHeight : 667;
+    const safeTop = Math.min(Math.max(clientY - 70, 90), vh - 220);
+
+    setActiveNote({
+      id,
+      text: msg,
+      top: safeTop,
+    });
+
+    // Auto-dismiss after 6 seconds
+    window.setTimeout(() => {
+      setActiveNote((curr) => (curr?.id === id ? null : curr));
+    }, 6000);
+
+    // Respawn balloon after 9 seconds
+    window.setTimeout(() => {
+      setPoppedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    }, 9000);
   };
 
   return (
-    <div className="pointer-events-none absolute inset-0">
-      {BALLOONS.map((b) => (
-        <div key={b.id} className="absolute" style={{ left: b.x, top: b.y }}>
-          <AnimatePresence>
-            {!popped.includes(b.id) && (
-              <motion.button
-                type="button"
-                aria-label="Pop a balloon for a hidden message"
-                onClick={(e) => pop(b.id, e)}
-                className="pointer-events-auto relative block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink"
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: [0, -14, 0], rotate: [-3, 3, -3] }}
-                exit={{ scale: 1.5, opacity: 0, transition: { duration: 0.22 } }}
-                whileHover={{ scale: 1.12, rotate: 6 }}
-                transition={{ y: { duration: 6 + b.delay, repeat: Infinity, ease: "easeInOut" }, rotate: { duration: 8, repeat: Infinity, ease: "easeInOut" }, opacity: { duration: 1, delay: b.delay * 0.3 } }}
+    <div className="pointer-events-none absolute inset-0 z-20 overflow-hidden w-full max-w-full">
+      <AnimatePresence>
+        {balloons.map((b) => {
+          if (poppedIds.has(b.id)) return null;
+
+          return (
+            <motion.div
+              key={b.id}
+              className="pointer-events-auto absolute cursor-pointer touch-manipulation"
+              data-cursor="CLICK"
+              style={{ left: `${b.startX}%` }}
+              initial={{ y: "115vh", opacity: 0, scale: 1 }}
+              animate={{
+                y: ["115vh", "-25vh"],
+                x: [-b.swayDist, b.swayDist, -b.swayDist],
+                rotate: [-3, 3, -3],
+                opacity: [0, 0.95, 0.95, 0.85, 0],
+                scale: 1,
+              }}
+              exit={{
+                scale: [1, 1.4, 0],
+                opacity: [1, 1, 0],
+                transition: { duration: 0.22, ease: "easeOut" },
+              }}
+              transition={{
+                y: { duration: b.speed, repeat: Infinity, ease: "linear", delay: b.delay },
+                x: { duration: 4.5, repeat: Infinity, ease: "easeInOut" },
+                rotate: { duration: 6, repeat: Infinity, ease: "easeInOut" },
+                opacity: { duration: b.speed, repeat: Infinity, ease: "linear", delay: b.delay },
+              }}
+              whileHover={{ scale: 1.1 }}
+              onClick={(e) => {
+                e.stopPropagation();
+                blastBalloon(b.id, e.clientX, e.clientY);
+              }}
+              onTouchStart={(e) => {
+                e.stopPropagation();
+                const touch = e.touches[0];
+                if (touch) {
+                  blastBalloon(b.id, touch.clientX, touch.clientY);
+                }
+              }}
+            >
+              {/* Photorealistic Matte Shaded Balloon */}
+              <svg
+                width={b.size}
+                height={b.size * 1.5}
+                viewBox="0 0 100 150"
+                className="filter drop-shadow-[0_8px_16px_rgba(40,32,28,0.12)]"
               >
-                <svg width={b.size} height={b.size * 1.5} viewBox="0 0 100 150" aria-hidden>
-                  <defs>
-                    <radialGradient id={`bg-${b.id}`} cx="35%" cy="28%">
-                      <stop offset="0%" stopColor="white" stopOpacity="0.85" />
-                      <stop offset="55%" stopColor={b.hue} />
-                      <stop offset="100%" stopColor={b.hue} stopOpacity="0.85" />
-                    </radialGradient>
-                  </defs>
-                  <ellipse cx="50" cy="52" rx="38" ry="47" fill={`url(#bg-${b.id})`} />
-                  <path d="M50 99 l-7 10 h14 z" fill={b.hue} />
-                  <path d="M50 109 c12 12 -12 22 0 34 c10 10 -6 5 -2 7" stroke="var(--ink)" strokeOpacity="0.35" fill="none" strokeWidth="1.4" />
-                </svg>
-              </motion.button>
-            )}
-          </AnimatePresence>
-          <AnimatePresence>
-            {note?.id === b.id && (
-              <motion.p
-                initial={{ opacity: 0, y: 10, scale: 0.9 }}
-                animate={{ opacity: 1, y: -8, scale: 1 }}
-                exit={{ opacity: 0, y: -24 }}
-                className="glass-panel absolute left-1/2 top-0 w-52 -translate-x-1/2 rounded-2xl px-4 py-3 text-center text-sm text-ink"
-              >
-                {note.text}
-              </motion.p>
-            )}
-          </AnimatePresence>
-        </div>
-      ))}
+                <defs>
+                  <radialGradient id={`balloon-body-${b.id}`} cx="34%" cy="30%" r="66%">
+                    <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.85" />
+                    <stop offset="22%" stopColor={b.color1} stopOpacity="0.9" />
+                    <stop offset="60%" stopColor={b.color2} stopOpacity="0.95" />
+                    <stop offset="100%" stopColor={b.color3} stopOpacity="0.9" />
+                  </radialGradient>
+
+                  <linearGradient id={`balloon-glint-${b.id}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.75" />
+                    <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+
+                <ellipse cx="50" cy="52" rx="42" ry="50" fill={`url(#balloon-body-${b.id})`} />
+                <ellipse cx="35" cy="34" rx="8" ry="15" transform="rotate(-22 35 34)" fill={`url(#balloon-glint-${b.id})`} />
+                <circle cx="30" cy="24" r="2.5" fill="#FFFFFF" opacity="0.85" />
+                <polygon points="50,102 44,107 56,107" fill={b.color3} />
+                <path d="M 50 107 Q 56 118, 46 130 T 52 146" fill="none" stroke={b.color3} strokeWidth="1" opacity="0.6" />
+              </svg>
+            </motion.div>
+          );
+        })}
+      </AnimatePresence>
+
+      {/* Pop Wish Card (Always 100% visible, centered horizontally on mobile, never cut off) */}
+      <AnimatePresence>
+        {activeNote && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.85, y: 15 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: -10 }}
+            transition={{ type: "spring", stiffness: 320, damping: 24 }}
+            className="fixed z-50 left-4 right-4 mx-auto w-[calc(100vw-32px)] max-w-[320px] rounded-3xl bg-white p-5 text-center shadow-2xl border-2 border-white pointer-events-auto select-none"
+            style={{
+              top: `${activeNote.top}px`,
+              boxShadow: "0 25px 60px -15px rgba(40, 32, 28, 0.4), 0 0 0 1px rgba(230, 220, 205, 0.8)",
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setActiveNote(null)}
+              className="absolute top-3 right-3 text-[#706259] hover:text-[#1E1613] p-1.5 rounded-full hover:bg-neutral-100 transition-colors cursor-pointer"
+              aria-label="Dismiss note"
+            >
+              <X className="h-4 w-4" />
+            </button>
+
+            <div className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-full bg-[#D99E43]/15 text-[#D99E43]">
+              <Star className="h-4.5 w-4.5 fill-current" />
+            </div>
+
+            <p className="font-display text-base sm:text-lg font-bold text-[#1E1613] leading-snug px-1">
+              &ldquo;{activeNote.text}&rdquo;
+            </p>
+
+            <div className="mt-3 flex items-center justify-center gap-1.5 text-[11px] uppercase tracking-widest text-[#C86D58] font-bold">
+              <Sparkles className="h-3 w-3" />
+              <span>Birthday Wish</span>
+              <Sparkles className="h-3 w-3" />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
