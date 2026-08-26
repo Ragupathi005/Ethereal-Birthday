@@ -26,19 +26,23 @@ const BALLOON_PRESETS = [
   { color1: "#F8EDEF", color2: "#C27E89", color3: "#8A4C56" }, // Faded Rose
 ];
 
-// Balloon starting positions across the width of the screen (10 balloons)
+// Deterministic offsets for consistent SSR hydration
 const INITIAL_BALLOONS: BalloonInstance[] = Array.from({ length: 10 }, (_, i) => {
   const preset = BALLOON_PRESETS[i % BALLOON_PRESETS.length]!;
+  const offset = ((i * 3) % 5) - 2;
+  const speedOffset = (i * 2.5) % 7;
+  const sizeOffset = (i * 4) % 14;
+  const swayOffset = (i * 1.5) % 6;
   return {
     id: i,
-    startX: 6 + i * 9.5 + (Math.random() * 2 - 1),
-    speed: 13 + Math.random() * 7,
+    startX: 6 + i * 9.5 + offset * 0.4,
+    speed: 13 + speedOffset,
     delay: (i * 1.5) % 9,
-    size: 58 + Math.random() * 14,
+    size: 58 + sizeOffset,
     color1: preset.color1,
     color2: preset.color2,
     color3: preset.color3,
-    swayDist: 8 + Math.random() * 6,
+    swayDist: 8 + swayOffset,
   };
 });
 

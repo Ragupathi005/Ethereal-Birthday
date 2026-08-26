@@ -13,6 +13,7 @@ export function IntroGate({ onOpen }: { onOpen: () => void }) {
 
   return (
     <motion.section
+      suppressHydrationWarning
       className="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden px-4 select-none"
       style={{ background: "var(--gradient-open)" }}
       exit={{
@@ -100,15 +101,17 @@ export function IntroGate({ onOpen }: { onOpen: () => void }) {
         </motion.div>
       </div>
 
-      {/* Discreet Footer Note */}
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.75 }}
-        transition={{ delay: 1.8, duration: 1 }}
-        className="absolute bottom-6 text-xs uppercase tracking-[0.3em] text-[#1E1613] font-bold"
+      {/* Visual Experience Recommendation Note */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 0.85, y: 0 }}
+        transition={{ delay: 1.6, duration: 1 }}
+        className="absolute bottom-5 sm:bottom-6 px-4 text-center"
       >
-        A Personalized Birthday Creation
-      </motion.p>
+        <p className="text-[11px] sm:text-xs tracking-wider text-[#1E1613] font-medium opacity-80">
+          💻 For the best visual experience, please open on a laptop or in desktop mode ✨
+        </p>
+      </motion.div>
     </motion.section>
   );
 }

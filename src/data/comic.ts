@@ -57,11 +57,11 @@ export const comicConfig = {
     "Every memorable story starts on an ordinary day...",
     "A saved seat, a quiet smile, and an unexpected friend.",
     "Through all the classes, laughter, and crazy adventures.",
-    "Happy Birthday, Thenmozhi! You make the world brighter.",
+    "Happy Birthday, Thanuja! You make the world brighter.",
   ],
   endingLines: [
     "And that's your special gift.",
     "I hope you enjoyed reading it as much as I loved making it.",
-    "Happy Birthday once again my dear best friend Thenmozhi ✨",
+    "Happy Birthday once again Thenmozhi!",
   ],
 };

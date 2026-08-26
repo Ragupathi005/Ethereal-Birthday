@@ -76,7 +76,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=1200, user-scalable=yes" },
+      { name: "viewport", content: "width=device-width, initial-scale=1.0" },
       { title: "Happy Birthday! | A Special Gift For You" },
       { name: "description", content: "A premium interactive birthday gift experience with memories, interactive surprises, and a special custom comic book." },
       { property: "og:title", content: "Happy Birthday! | A Special Gift For You" },
@@ -107,29 +107,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className="overflow-x-hidden">
+    <html lang="en" className="overflow-x-hidden" suppressHydrationWarning>
       <head>
         <HeadContent />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  var w = window.screen.width || window.innerWidth;
-                  if (w < 1200) {
-                    var s = w / 1200;
-                    var meta = document.querySelector('meta[name="viewport"]');
-                    if (meta) {
-                      meta.setAttribute('content', 'width=1200, initial-scale=' + s + ', minimum-scale=' + (s * 0.5) + ', maximum-scale=3.0, user-scalable=yes');
-                    }
-                  }
-                } catch(e) {}
-              })();
-            `,
-          }}
-        />
       </head>
-      <body className="overflow-x-hidden min-h-screen antialiased min-w-[1200px]">
+      <body className="overflow-x-hidden min-h-screen antialiased selection:bg-[#C86D58] selection:text-white" suppressHydrationWarning>
         {children}
         <Scripts />
       </body>

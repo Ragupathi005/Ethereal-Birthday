@@ -6,7 +6,7 @@
  */
 export const birthdayConfig = {
   /** The birthday person's name */
-  name: "Thenmozhi",
+  name: "Thanuja",
   /** Intro mystery teasers */
   teaserPre: "I made something for you...",
   teaserPost: "A little birthday surprise.",
