@@ -134,13 +134,6 @@ export function GiftReveal({ opened, onOpen }: Props) {
                     </span>
                   </div>
                 </div>
-
-                {/* Tag Label */}
-                <div className="pt-2.5 pb-0.5 text-center">
-                  <span className="font-display text-base sm:text-lg font-bold text-[#1E1613]">
-                    A Custom Story For {birthdayConfig.name.split(" ")[0]} 🎁
-                  </span>
-                </div>
               </div>
 
               {/* Glowing Eruption Rays when Unwrapped */}

@@ -65,13 +65,21 @@ export const interactiveWishes = [
 
 /** Staged emotional thoughts in the reflection chapter */
 export const emotionalLines = [
-  "Some moments are loud.",
-  "Some are completely ordinary.",
-  "A conversation on a walkway.",
-  "A laugh between classes.",
-  "A random photograph we almost forgot.",
-  "And somehow... those are the moments that stay.",
-  "I'm really glad I got to share them with you.",
+  "Today is all about you.",
+  "Your smile, your happiness,",
+  "and all the little things that make you who you are.",
+  "I hope you always keep that same smile,",
+  "that same energy, and that same beautiful vibe.",
+  "May this year bring you countless reasons to smile,",
+  "wonderful moments to cherish,",
+  "and everything you have been wishing for.",
+  "May you achieve everything you deserve,",
+  "and may every step you take lead you to something better.",
+  "Stay happy. Stay the same.",
+  "Keep shining in your own way.",
+  "And I'm really happy that, somewhere along the way,",
+  "I got to become your friend. ❤️",
+  "Here's to another beautiful year of your life.",
 ];
 
 /** Digital scratch card secret message */
